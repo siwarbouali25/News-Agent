@@ -151,23 +151,21 @@ def parse_article(url, category):
     except Exception:
         pass
 
+    # 2) Generic selectors (ASCII quotes only)
     if len(content_text) < 800:
-        paras = (soup.select('[data-component="text-block"] p') or
-                 soup.select("article p") or
-                 soup.select("main p") or
-                 soup.select('[class*="RichTextComponentWrapper"] p"))
+        paras = (
+            soup.select('[data-component="text-block"] p')
+            or soup.select('article p')
+            or soup.select('main p')
+            or soup.select('[class*="RichTextComponentWrapper"] p')
+        )
         if paras:
             txt = clean_join(paras)
             if len(txt) > len(content_text):
                 content_text = txt
 
+    # 3) JSON-LD articleBody
     if len(content_text) < 800:
-        for s in soup.find_all("script", type="application/ld+json"):
-            try:
-                data = json.loads(s.string or "")
-            except Exception:
-                continue
-        # Re-iterate to capture multiple objects
         for s in soup.find_all("script", type="application/ld+json"):
             try:
                 data = json.loads(s.string or "")
@@ -175,20 +173,25 @@ def parse_article(url, category):
                 continue
             objs = data if isinstance(data, list) else [data]
             for obj in objs:
-                if isinstance(obj, dict) and obj.get("@type") in ("NewsArticle","Article"):
+                if isinstance(obj, dict) and obj.get("@type") in ("NewsArticle", "Article"):
                     body = obj.get("articleBody")
                     if isinstance(body, str) and len(body) > len(content_text):
                         content_text = body.strip()
             if len(content_text) >= 800:
                 break
 
+    # 4) AMP fallback
     if len(content_text) < 800:
         amp = (soup.find("link", rel="amphtml") or {}).get("href")
         if amp:
             try:
                 amp_html = fetch(amp).text
                 amp_soup = BeautifulSoup(amp_html, "lxml")
-                amp_paras = amp_soup.select("article p") or amp_soup.select("main p") or amp_soup.select("p")
+                amp_paras = (
+                    amp_soup.select("article p")
+                    or amp_soup.select("main p")
+                    or amp_soup.select("p")
+                )
                 amp_text = clean_join(amp_paras)
                 if len(amp_text) > len(content_text):
                     content_text = amp_text
