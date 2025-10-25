@@ -1,0 +1,25 @@
+name: Hourly Scrapers
+on:
+  schedule: [{ cron: "0 * * * *" }]   # every hour
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: { shard_idx: [0,1,2,3] }  # 4 parallel shards
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - name: Run shard
+        run: |
+          python scraper.py \
+            --config configs/news.yaml \
+            --shards 4 --shard-idx ${{ matrix.shard_idx }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.shard_idx }}-${{ github.run_id }}
+          path: out/*.csv
