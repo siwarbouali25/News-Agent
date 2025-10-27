@@ -1,0 +1,12 @@
+domain,score,label
+new york times,0.878,Reliable
+the guardian,0.857,Reliable
+theconversation,0.831,Mostly reliable
+cnn,0.831,Mostly reliable
+bbc,0.759,Mostly reliable
+variety,0.732,Mostly reliable
+aljazeera,0.718,Mostly reliable
+wired,0.694,Mixed
+arstechnica,0.685,Mixed
+livescience,0.662,Mixed
+cbssports,0.625,Mixed
