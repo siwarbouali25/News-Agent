@@ -1,8 +1,0 @@
-pyyaml
-python-dateutil
-readability-lxml
-beautifulsoup4
-lxml
-feedparser
-pandas
-requests
